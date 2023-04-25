@@ -8,6 +8,9 @@ import os
 import threading
 import requests
 
+import sys
+sys.stdout = sys.stderr = open(os.devnull, 'w')
+
 SHUTDOWN_FLAG = False
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -18,6 +21,10 @@ def close():
     global SHUTDOWN_FLAG
     SHUTDOWN_FLAG = True
     return 'Server shutting down...'
+
+@app.route('/')
+def index():
+    return 'site opened'
 
 
 @app.after_request
@@ -93,16 +100,16 @@ def fit_tokens():
         token_num = num_tokens_from_messages(messages)
     return jsonify(messages)
 
-@app.route("/fit-tokens", methods=['POST'])
-def fit_tokens():
-    data = json.loads(request.data)
-    messages = data["messages"]
-    print("messages", messages)
-    token_num = num_tokens_from_messages(messages)
-    while token_num > 4000*0.8:
-        messages.pop(1)
-        token_num = num_tokens_from_messages(messages)
-    return jsonify(messages)
+# @app.route("/fit-tokens", methods=['POST'])
+# def fit_tokens():
+#     data = json.loads(request.data)
+#     messages = data["messages"]
+#     print("messages", messages)
+#     token_num = num_tokens_from_messages(messages)
+#     while token_num > 4000*0.8:
+#         messages.pop(1)
+#         token_num = num_tokens_from_messages(messages)
+#     return jsonify(messages)
 
 
 def send_sstp(event: str, refs):
@@ -122,14 +129,14 @@ def send_sstp(event: str, refs):
 
 
 if __name__ == "__main__":
-    import fcntl
+    # import fcntl
 
-    lock_file = open('tiktoken.lock', 'w')
+    # lock_file = open('tiktoken.lock', 'w')
 
-    try:
-        fcntl.lockf(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except IOError:
-        print("Another instance is already running, exiting...")
+    # try:
+    #     fcntl.lockf(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    # except IOError:
+    #     print("Another instance is already running, exiting...")
     initial_port = 19801
     port = find_available_port(initial_port)
     send_sstp(event="OnPortSelected",refs=[port])
