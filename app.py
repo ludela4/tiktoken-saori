@@ -7,7 +7,7 @@ import textwrap
 import os
 import threading
 import requests
-
+import platform
 import sys
 sys.stdout = sys.stderr = open(os.devnull, 'w')
 
@@ -18,9 +18,11 @@ app.config['JSON_AS_ASCII'] = False
 
 @app.route('/close', methods=['GET'])
 def close():
-    global SHUTDOWN_FLAG
-    SHUTDOWN_FLAG = True
-    return 'Server shutting down...'
+    isWindows=platform.system()=="Windows"
+    if isWindows:
+        global SHUTDOWN_FLAG
+        SHUTDOWN_FLAG = True
+        return 'Server shutting down...'
 
 @app.route('/')
 def index():
